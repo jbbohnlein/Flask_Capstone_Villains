@@ -1,36 +1,35 @@
 from flask_sqlalchemy import SQLAlchemy
-# from flask_migrate import Migrate
-import uuid
+from flask_migrate import Migrate
+import uuid    # for unique ids in primary keys
 from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
-from flask_login import UserMixin, LoginManager
-from flask_marshmallow import Marshmallow
-import secrets
+from flask_login import UserMixin
+from flask_login import LoginManager
+from flask_marshmallow import Marshmallow # helps with moving data back and forth
+import secrets 
+
+# set variables for class insantiation
 
 login_manager = LoginManager()
 ma = Marshmallow()
 db = SQLAlchemy()
 
-# bookshelf = {}
-
-@login_manager.user_loader
+@login_manager.user_loader   # like writing a route where the user
+# getting looked for will get loaded
 
 def load_user(user_id):
    return User.query.get(user_id) 
 
-
 class User(db.Model, UserMixin):       # This whole class is for users to create accounts and login and what data is associated with that account
     id = db.Column(db.String, primary_key=True)
-    # username = db.Column(db.String(150), nullable=False, default='') # username can't be empty to sign up
     email = db.Column(db.String(150), nullable=False)     # email can't be empty to sign up
-    password = db.Column(db.String, nullable=False, default='')
+    password = db.Column(db.String, nullable=True, default='')
     g_auth_verify = db.Column(db.Boolean, default=False)
     token = db.Column(db.String, default='', unique=True) # Want to be able to see/gatekeep who is accessing our stuff
     date_created = db.Column(db.DateTime, nullable=False, default=datetime.utcnow) # when the user creates an account, we'll know what date it was
 
-    def __init__(self, email, password='', token='', g_auth_verify=False):     # username=''
+    def __init__(self, email, password='', token='', g_auth_verify=False):
         self.id = self.set_id()
-        # self.username = username
         self.password = self.set_password(password)
         self.email = email
         self.token = self.set_token(24)
@@ -49,37 +48,34 @@ class User(db.Model, UserMixin):       # This whole class is for users to create
     def __repr__(self):
         return f'User {self.email} has been added to the database'
 
-# Create a class of books with the info that I actually want to store. 
-# So, when a user wants to update their shelf, they can
+# TODO: Figure out how to make these nullable entries actually nullable without giving me a 500 error
 
-class ShelvedBook(db.Model):
-    key = db.Column(db.String, primary_key=True)  # Maybe not needed?
+class Book(db.Model):
+    id = db.Column(db.String, primary_key = True)
+    key = db.Column(db.String(200))
     title = db.Column(db.String(200), nullable=False)
     author = db.Column(db.String(200), nullable=False)
-    # cover = db.Column(db.Image)
     year = db.Column(db.Integer)
-    avg_rating = db.Column(db.Float(1, 1))
-    user_rating = db.Column(db.Integer)
+    user_token = db.Column(db.String, db.ForeignKey('user.token'), nullable = False)
 
-# all these db.s come from ^ where I set variables for class instantiation 
-# and set db = SQLAlchemy. This is how data gets put into SQLAlchemy
-
-    def __init__(self,key,title,author,year,avg_rating,user_rating):
+    def __init__(self, key, title, author, year, user_token, id = ''):
+        self.id = self.set_id()
         self.key = key
         self.title = title
         self.author = author
         self.year = year
-        self.avg_rating = avg_rating
-        self.user_rating = user_rating
+        self.user_token = user_token
+
 
     def __repr__(self):
-        return f'{self.title} has been added to your shelf'
+        return f'The following book has been added to your shelf: {self.title} by {self.author}'
 
-# Need to deal with creating a network and how the data interacts with one another
-        # deals with connecting the dots and how things relate to one another:
+    def set_id(self):
+        return (secrets.token_urlsafe())
+
 class BookSchema(ma.Schema):
     class Meta:
-        fields = ['key', 'title', 'author', 'year', 'avg_rating', 'user_rating']
+        fields = ['id', 'key', 'title', 'author', 'year']
 
 book_schema = BookSchema()
 books_schema = BookSchema(many=True)

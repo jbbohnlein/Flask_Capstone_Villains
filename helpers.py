@@ -1,5 +1,5 @@
-# The Helpers file will essentially create an extra function to check tokens for rightful access to data, 
-# and create an encoder for the JSON content.
+# Our Helpers file will essentially create an extra function to check tokens for rightful access to data, 
+# and create an encoder for our JSON content.
 
 from functools import wraps    # functools comes with python
 import secrets
@@ -57,4 +57,3 @@ class JSONEncoder(json.JSONEncoder):
         if isinstance(obj, decimal.Decimal):   # checking to see if the object is a certain data type
             return str(obj)
         return super(JSONEncoder,self).default(obj)
-

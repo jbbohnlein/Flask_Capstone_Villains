@@ -43,7 +43,7 @@ def signin():
             if logged_user and check_password_hash(logged_user.password, password):     # we pulled this up at the top from models. check_password_hash will unhash it
             # and make sure it's the correct credentials. The logged_user is checking to see if they're in the database
                 login_user(logged_user)
-                flash('You were successful in your initiation. Welcome to the Jedi Knights!', 'auth-success') # auth-success talks to application??
+                flash('You were successful in your initiation.', 'auth-success') # auth-success talks to application??
                 return redirect(url_for('site.profile')) # once they sign in, it takes them to their user profile page
             else:
                 flash('You have failed in your attempt to access this content.', 'auth-failed')

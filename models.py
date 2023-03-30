@@ -50,32 +50,32 @@ class User(db.Model, UserMixin):       # This whole class is for users to create
 
 # TODO: Figure out how to make these nullable entries actually nullable without giving me a 500 error
 
-class Book(db.Model):
+class Villain(db.Model):
     id = db.Column(db.String, primary_key = True)
-    key = db.Column(db.String(200))
+    villain = db.Column(db.String(200))
     title = db.Column(db.String(200), nullable=False)
-    author = db.Column(db.String(200), nullable=False)
-    year = db.Column(db.Integer)
+    hero = db.Column(db.String(200), nullable=False)
+    desc = db.Column(db.String(200), nullable=False)
     user_token = db.Column(db.String, db.ForeignKey('user.token'), nullable = False)
 
-    def __init__(self, key, title, author, year, user_token, id = ''):
+    def __init__(self, villain, title, hero, desc, user_token, id = ''):
         self.id = self.set_id()
-        self.key = key
+        self.villain = villain
         self.title = title
-        self.author = author
-        self.year = year
+        self.hero = hero
+        self.desc = desc
         self.user_token = user_token
 
 
     def __repr__(self):
-        return f'The following book has been added to your shelf: {self.title} by {self.author}'
+        return f'The following villain has been added to the database: {self.villain} from {self.title}'
 
     def set_id(self):
         return (secrets.token_urlsafe())
 
 class BookSchema(ma.Schema):
     class Meta:
-        fields = ['id', 'key', 'title', 'author', 'year']
+        fields = ['id','villain', 'title', 'hero', 'desc']
 
 book_schema = BookSchema()
 books_schema = BookSchema(many=True)
